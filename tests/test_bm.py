@@ -90,6 +90,18 @@ class TestBoltzmannMachine(unittest.TestCase):
                 energy = self.bm(test_input)
                 self.assertEqual(energy.device, device)
 
+    def test_constructor_moves_supplied_parameters_to_requested_device(self):
+        device = torch.device("meta")
+        bm = BM(
+            2,
+            torch.zeros(2, 2),
+            torch.zeros(2),
+            device=device,
+        )
+
+        self.assertEqual(bm.quadratic_coef.device, device)
+        self.assertEqual(bm.linear_bias.device, device)
+
     def test_gibbs_sample(self):
         """测试gibbs_sample采样功能"""
         with self.subTest("采样输出形状与类型"):
