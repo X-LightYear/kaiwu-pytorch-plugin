@@ -42,7 +42,7 @@ class TestBoltzmannMachine(unittest.TestCase):
             energy_ones = self.bm(self.ones).item()
             energy_mones = self.bm(self.mones).item()
 
-            # 验证能量计算的正确性
+            # 验证计算的正确性
             self.assertIsInstance(energy_ones, float)
             self.assertIsInstance(energy_mones, float)
 
@@ -51,7 +51,7 @@ class TestBoltzmannMachine(unittest.TestCase):
         with self.subTest("测试Ising矩阵生成"):
             ising_mat = self.bm.get_ising_matrix()
 
-            # 验证Ising矩阵的维度
+            # 验证矩阵的维度
             expected_size = self.num_nodes + 1
             self.assertEqual(ising_mat.shape, (expected_size, expected_size))
             # 验证矩阵是对称的
@@ -89,6 +89,22 @@ class TestBoltzmannMachine(unittest.TestCase):
                 test_input = self.ones.to(device)
                 energy = self.bm(test_input)
                 self.assertEqual(energy.device, device)
+
+    def test_sampler_output_preserves_model_dtype(self):
+        class Sampler:
+            def solve(self, ising_mat):
+                del ising_mat
+                return torch.tensor(
+                    [[1, -1, 1], [-1, 1, 1]], dtype=torch.float32
+                )
+
+        quadratic = torch.zeros(2, 2, dtype=torch.float64)
+        linear = torch.zeros(2, dtype=torch.float64)
+        bm = BM(2, quadratic, linear)
+
+        samples = bm.sample(Sampler())
+
+        self.assertEqual(samples.dtype, torch.float64)
 
     def test_gibbs_sample(self):
         """测试gibbs_sample采样功能"""

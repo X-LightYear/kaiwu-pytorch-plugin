@@ -25,14 +25,13 @@ class AbstractBoltzmannMachine(torch.nn.Module):
             self.device = device
 
     def _apply(self, fn, recurse=True):
-        """Applies ``fn`` to parameters and keeps ``self.device`` in sync.
+        """Applies `fn` to parameters and keeps `self.device` in sync.
 
-        ``nn.Module`` moves child modules through ``_apply`` without calling a
-        child's ``.to()`` override, so a Boltzmann machine nested inside
+        `nn.Module` moves child modules through `_apply` without calling a
+        child's `.to()` override, so a Boltzmann machine nested inside
         another module would otherwise keep a stale plain-attribute device
         after its parameters were moved. Syncing here covers every move path:
-        direct ``.to()``/``.cpu()`` calls and moves initiated by parent
-        modules.
+        direct `.to()`/`.cpu()` calls and moves initiated by parent modules.
 
         Args:
             fn: Function applied to each parameter and buffer.
@@ -114,7 +113,8 @@ class AbstractBoltzmannMachine(torch.nn.Module):
             solution = sampler.solve(ising_mat)
 
         solution = (solution[:, :-1] * solution[:, [-1]] + 1) / 2
-        solution = torch.FloatTensor(solution)
-        solution = solution.to(self.device)
+        parameter = next(self.parameters(), None)
+        dtype = parameter.dtype if parameter is not None else torch.float32
+        solution = torch.as_tensor(solution, dtype=dtype, device=self.device)
 
         return solution
