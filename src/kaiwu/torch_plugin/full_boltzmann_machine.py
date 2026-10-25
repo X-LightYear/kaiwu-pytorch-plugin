@@ -32,15 +32,19 @@ class BoltzmannMachine(AbstractBoltzmannMachine):
     ):
         super().__init__(device=device)
         self.num_nodes = num_nodes
+        if quadratic_coef is not None:
+            quadratic_coef = quadratic_coef.to(self.device)
+        if linear_bias is not None:
+            linear_bias = linear_bias.to(self.device)
         self.quadratic_coef = torch.nn.Parameter(
             quadratic_coef
             if quadratic_coef is not None
-            else torch.randn((self.num_nodes, self.num_nodes)).to(self.device) * 0.01
+            else torch.randn((self.num_nodes, self.num_nodes), device=self.device) * 0.01
         )
         self.linear_bias = torch.nn.Parameter(
             linear_bias
             if linear_bias is not None
-            else torch.zeros(self.num_nodes).to(self.device)
+            else torch.zeros(self.num_nodes, device=self.device)
         )
 
     def symmetrized_quadratic_coef(self):
