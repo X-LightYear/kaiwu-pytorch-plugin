@@ -138,7 +138,8 @@ def top_k_top_p_filtering(
         replaced by ``filter_value``.
     """
     original_shape = logits.shape
-    flat_logits = logits.reshape(-1, original_shape[-1])
+    # Filtering should return a new tensor; callers may reuse the proposal logits.
+    flat_logits = logits.reshape(-1, original_shape[-1]).clone()
     assert flat_logits.dim() == 2
 
     top_k = min(top_k, flat_logits.size(-1))
